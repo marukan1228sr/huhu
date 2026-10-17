@@ -4,3 +4,15 @@
 
 .day{height:82px;justify-content:flex-start;padding:7px 2px;gap:5px;min-width:0;overflow:hidden}.day-number{font-size:11px;line-height:16px}.day-preview{width:100%;min-width:0;text-align:left}.day-event{display:block;background:#3c3527;border-left:2px solid #bca26c;border-radius:3px;padding:3px 4px;color:#dcc797;overflow:hidden}.day-event small{display:block;font-size:8px;line-height:11px;font-weight:500}.day-event strong{display:block;font-size:9px;line-height:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.day.selected .day-event{background:#ad915c;color:#171611;border-color:#51422c}.day-more{font-size:7px;line-height:12px;display:block;color:#aaa59b;padding-left:3px}.day.selected .day-more{color:#4a3e28}.calendar-grid{align-items:stretch}@media(max-width:700px){.day{height:78px;margin:1px;padding:4px 1px;gap:3px}.day-event{padding:2px 2px;border-left-width:1px}.day-event strong{font-size:8px;line-height:12px}.day-event small{font-size:7px;line-height:10px}.day-more{font-size:7px;padding:0}.calendar-grid,.weekdays{margin-left:10px;margin-right:10px}}
 .login-page{min-height:100dvh;display:grid;place-items:center;padding:30px 20px;background:radial-gradient(ellipse at 50% 15%,#39302066,transparent 65%),#111213}.login-card{max-height:none}.login-card>.brand{margin:0 0 42px;padding:0}.login-card h1{font-size:24px}.login-card .eyebrow{margin-bottom:16px}.login-foot{color:#74777d;font-size:10px;text-align:center;margin-top:30px;letter-spacing:1px}.login-error{color:#ecb9a6;font-size:12px;line-height:1.8}.login-switch{color:#b4ac9b}
+
+/* Keep iPhone's keyboard from zooming or covering the message composer. */
+.chat-input{flex-shrink:0}.chat-input .send-button{flex-shrink:0;touch-action:manipulation;min-width:44px;min-height:44px}.chat-input>button{flex-shrink:0;min-width:40px;min-height:44px}.chat-input>input{font-size:16px;line-height:1.5;min-height:44px}.chat-input:focus-within{border-color:var(--gold)}
+@media(max-width:700px){
+ input,textarea,.modal input,.modal textarea,.form-pair input,.return-note input{font-size:16px}
+ .chat-input{gap:6px;padding:7px;margin:0 12px}.chat-input>input{font-size:16px;padding:5px 2px}
+ .composer-focused .mobile-nav{display:none}
+ .composer-focused .chat-panel{padding-bottom:82px}
+ .composer-focused .chat-input{position:fixed;z-index:90;top:var(--visible-bottom,100dvh);left:0;right:0;transform:translateY(-100%);margin:0;border-radius:12px 12px 0 0;padding:9px 12px 10px;background:#17191c;box-shadow:0 -8px 24px #0006;border:1px solid #5c5038}
+ .composer-focused .toast{bottom:auto;top:calc(var(--visible-bottom,100dvh) - 132px);z-index:110}
+ .composer-focused .messages,.composer-focused .single .messages{min-height:100px;max-height:max(100px,calc(var(--visible-height,100dvh) - 180px))}
+}
