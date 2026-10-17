@@ -1,130 +1,132 @@
-# HOMEWARD
+# HOMEWARD — 自分のCloudflareで使う版
 
-帰宅ボタンを主役にした、二人で使う家族向けWebアプリです。
-ブラック・シルバー・ゴールドのデザインで、iPhoneのホーム画面から開けます。
+GitHubで管理し、自分のCloudflare Workersに公開する夫婦用Webアプリです。
+OpenAI SitesやChatGPTログインは必要ありません。GitHub Pages単体では動きません。
 
-## 機能
+## アプリの機能
 
-- 「今から帰る」ボタンと任意のひと言
-- 相手の登録端末へWeb Push通知（本文付き）
-- 通知登録、自分へのテスト通知、送信サービス受付結果の表示
-- 文字・写真のチャット（10秒ごとに更新）
-- 月表示の共有カレンダー、予定の追加・編集・削除
-- カレンダーの日付マス内に時間と予定名を表示。複数の予定は「ほか○件」表示
-- 二人の部屋の作成と招待リンク
-- サーバー側で参加者を確認し、データと写真へのアクセスを制限
+- 大きな「今から帰る」ボタン、任意のひと言、相手への本文付きWeb Push通知
+- 文字・写真チャット（10秒ごとに更新）
+- 月表示カレンダー、予定の追加・編集・削除
+- 日付マス内に時刻と予定名を表示
+- メールアドレス・パスワードでの専用ログイン、二人限定の招待登録
+- iPhoneホーム画面用アイコン、通知登録、テスト通知
 
-## このソースについて
+## 何をどこに置くか
 
-React / TypeScript / Vinext、Cloudflare Workers / D1 / R2を使用した **Sites向けのサーバー付きソース** です。
-GitHubで保存・編集できますが、**GitHub Pagesだけでは動作しません**。
-通知送信・共有データ・写真の保存にはサーバーが必要です。
+- GitHub：プログラム
+- 自分のCloudflare Workers：画面とAPI、通知送信
+- 自分のCloudflare D1：アカウント、予定、チャット、縮小写真、通知登録と通知用の鍵
 
-本番ログインと閲覧権限はSitesが提供するChatGPT認証を使用します。
-Cloudflareへ単独でデプロイしたりVercel等に移すには、認証・ストレージ・ビルド設定の移植が別途必要です。
-外部から指定したユーザーヘッダーをそのまま信頼する構成で単独公開しないでください。
+写真は端末側で長辺1280px以下のJPEGへ縮小して保存します。元写真の保管サービスではありません。
+写真保存もD1で行うため、この版ではR2の契約・設定は不要です。
+以前のSites版のデータは自動では移りません。新しいURLでは二人とも通知の登録をやり直します。
 
-配布用ソースには本番の秘密鍵、メールアドレス、利用データ、既存Siteのproject_idを含めていません。
-このZIPは既存公開サイトへの接続済みバックアップではなく、新規環境用のソースです。
-既存サイトの更新には、元のSitesチェックアウトの設定を維持してください。
+## Cloudflare管理画面から公開する手順
 
-## GitHubへのアップロード
+1. Workers & Pages → Create application → Continue with GitHub
+2. `marukan1228sr/huhu` リポジトリを選択
+3. Project name：`huhu`
+4. Build command：`npm run build`
+5. **Deploy command：`npm run deploy`**（標準の `npx wrangler deploy` から変更）
+6. 初期設定が終わるまでは Enable Preview builds をOFF
+7. Deployを実行
 
-1. ZIPを展開します。
-2. GitHubで新しいリポジトリを作成します（家族用ならPrivateを推奨）。
-3. `homeward` フォルダーの **中身** をリポジトリ直下へアップロードします。
-4. `.gitignore`、`.openai`などの隠しファイル・フォルダーも含めます。
+`npm run deploy` は、Workersの公開・D1の自動作成・DBの初期化を行います。
+Cloudflare側の権限や自動作成機能が有効な状態である必要があります。
+実際の自分のアカウントへのデプロイは、接続・認可後に確認してください。
+DB初期化中は一時的に準備中と表示されます。デプロイが失敗した場合はログを確認してください。
 
-Gitを使う場合は、展開した `homeward` フォルダーで次を実行します。
+### 最初の登録を保護する設定
 
-```sh
-git init
-git add .
-git commit -m "Initial HOMEWARD source"
-git branch -M main
-git remote add origin <自分のGitHubリポジトリURL>
-git push -u origin main
-```
+公開後、Cloudflareで `huhu` を開き、Settings → Variables and Secrets から以下を追加します。
 
-## ローカル開発
+| 種類 | 名前 | 値 |
+| --- | --- | --- |
+| Secret | `SETUP_KEY` | 自分で決めた24文字以上の長いランダムな文字列 |
 
-Node.js 22.13以降とnpmが必要です。
+秘密キーはGitHubやチャットに貼らないでください。
+キーの変更を適用するため、Cloudflareの画面に従ってDeploy/Saveします。
+公開したURLを開き、メールアドレス・表示名・12文字以上のパスワード・SETUP_KEYを入力して最初の登録をします。
+SETUP_KEYが未設定の場合は、誰も初回登録できません。
+初回登録後は設定から招待リンクをコピーし、奥さんに送ります。奥さんは招待リンクから登録します。
+二人が登録すると、その招待リンクでは追加登録できません。
+メールアドレスはログイン用の識別子です。認証メールや通知メールを送る機能はありません。
+
+SETUP_KEYはパスワード再設定にも使います。安全な場所に保管してください。
+紛失した場合はCloudflareで新しい値に変更して適用できます。変更だけで既存アカウントのパスワードは変わりません。
+
+### 通知
+
+通知に必要なVAPID鍵はアプリが生成し、D1のサーバー側だけで保持します。
+秘密鍵を画面やAPIから返すことはありません。D1全体のエクスポートには秘密情報も含まれるので、GitHubに置かないでください。
+
+1. 二人ともSafariで公開URLを開く
+2. 「ホーム画面に追加」し、そのアイコンから開く
+3. ログイン
+4. 「通知の設定」→「この端末の通知を有効にする」
+5. 「自分にテスト通知を送る」で着信を確認
+6. 片方の「今から帰る」で、もう片方に着信するか確認
+
+iOS 16.4以降が必要です。通信や集中モード、通知プレビュー等の設定によって表示・タイミングは変わります。
+送信サービスの受付は、端末への着信や既読の確認ではありません。
+通知の画像添付は行わず、写真は通知をタップしてチャットから開きます。
+
+## ローカルで開発する
+
+Node.js 22.13以上とnpmを用意します。
 
 ```sh
 npm ci
-node scripts/generate-vapid.mjs
 ```
 
-`.dev.vars.example` を `.dev.vars` にコピーし、生成された鍵と自分のサイトURLを入力します。
-秘密鍵はGitHubへアップロードしないでください。
-
-初回はビルドでローカルDB設定を作り、マイグレーションを適用します。
+`.dev.vars.example` を `.dev.vars` にコピーし、開発用のSETUP_KEYを24文字以上で入力します。
+本番と同じキーは使わないでください。`.dev.vars` はGitHubにアップロードしません。
 
 ```sh
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_sturdy_demogoblin.sql
+npm run db:local
 npm run dev
 ```
 
-ターミナルに表示されるローカルURLを開きます。
-ローカルのログイン画面では開発用ユーザーが使われます。本番ではこの模擬ログインは無効です。
-DBの内容を変える場合は `db/schema.ts` を編集し、`npm run db:generate` で追加のSQLを生成してください。
-既存の適用済みマイグレーションは書き換えません。
+`http://localhost:5174/` を開きます。ローカルでも本物と同じ専用ログインを使います。
 
-## Sitesで本番公開する場合
+```sh
+npm run check
+npm run build
+npx wrangler deploy --dry-run
+```
 
-Sites対応のCodexでこのフォルダーを開き、新しいSiteとして登録して公開します。
-必要な設定は次のとおりです。
+### テスト
 
-- D1のバインディング名：`DB`
-- R2のバインディング名：`BUCKET`
-- ランタイム環境変数：`VAPID_PUBLIC_KEY`、`VAPID_PRIVATE_KEY`、`VAPID_SUBJECT`
-- `VAPID_PRIVATE_KEY`は秘密の環境変数として設定
-- `VAPID_SUBJECT`は実在する運用サイトのHTTPS URL等に設定
-- 閲覧可能なアカウントは家族の二人に限定
+`tests/smoke.mjs` は空の使い捨てローカルDBと起動中の開発サーバーに対して実行します。
+本番URLでは動かないよう制限しています。
+TEST_SETUP_KEY環境変数に開発用キーを設定してから `node tests/smoke.mjs` を実行してください。
+テスト用アカウント、チャット、写真がローカルに作られます。
+`tests/push-runtime.mjs` はそのローカルテスト環境向けです。実在しないテスト送信先の失効応答で、Cloudflareランタイムの暗号化・送信処理を検証します。
 
-Sitesの標準ビルド連携は `vite.config.ts` と `build/` に含まれています。
-公開時には `.openai/hosting.json` に新しいSiteのproject_idを設定し、Sitesのワークフローでソース保存・ビルド・マイグレーション・公開を実行します。
-GitHubへpushするだけでSitesが自動更新される構成や、GitHub Actionsは含めていません。
+確認済み：本番ビルド、型チェック、ローカルの二人登録、招待制限、ログイン、パスワード再設定、セッション無効化、予定CRUD、帰宅連絡共有、写真アクセス制御、通知用公開鍵の保持、ヘッダー偽装拒否、Originチェック、CloudflareランタイムでのWeb Push暗号化・署名・送信と失効処理。
+**未確認：あなたのCloudflareでの本番デプロイとiPhone実機への通知着信。**
 
-## iPhoneで通知を使う
+## 更新・データ・運用
 
-1. 二人とも、許可されたアカウントでサイトへログインします。
-2. Safariの共有メニューから「ホーム画面に追加」を選びます。
-3. ホーム画面のアイコンから開きます。
-4. 「通知の設定」→「この端末の通知を有効にする」を押し、通知を許可します。
-5. 「自分にテスト通知を送る」を押し、実際にiPhoneへ届くことを確認します。
-6. 一人が部屋を作り、招待リンクをもう一人に共有します。もう一人は表示名を入力して参加します。
-7. 帰宅ボタンを押し、相手のiPhoneに通知が届くことを二人で確認します。
+GitHubを更新すると、接続したCloudflare側でビルドと公開が実行される構成です。
+Worker名はCloudflareのProject nameと `wrangler.jsonc` のnameを一致させます。
+適用済みSQLは書き換えず、`drizzle/` に次の番号のSQLを追加してください。
+`npm run deploy` が未適用のSQLのみ反映します。バックアップはCloudflareのD1管理機能から別途保管してください。
+公開サイトを削除してもDBが残る場合があるため、廃止時はWorkersとD1をそれぞれ確認します。
+プランの利用制限や料金はCloudflareの管理画面で確認してください。このソースは無料利用を保証するものではありません。
+GitHubリポジトリが公開でも、ログイン情報や家族のデータはそのリポジトリに含まれません。
 
-iOS 16.4以降が必要です。Web Pushの登録は端末ごとに行います。
-「通知サービスが受け付けた」は、端末への着信や相手の既読を意味しません。
-通信・通知設定・集中モード等で通知が遅れたり見えない場合があります。
-通知に表示される本文のプレビューはiPhone側の設定によります。
+## ファイル
 
-## 確認済みの範囲
+- `app/homeward.tsx`：帰宅ボタン、チャット、カレンダー
+- `app/login.tsx`：ログインと初回登録画面
+- `app/auth.ts`：パスワードハッシュとセッション
+- `app/api/auth/route.ts`：招待登録、ログイン、ログアウト、パスワード再設定
+- `app/api/family/route.ts`：家族の共有データ
+- `app/api/photo/route.ts`：ログインした家族だけの写真
+- `app/api/push/route.ts`、`app/push.ts`、`public/sw.js`：通知
+- `wrangler.jsonc`、`vite.config.ts`、`build/worker.ts`：自分のCloudflare向け構成
+- `scripts/deploy.mjs`：公開とDB初期化
 
-- TypeScriptチェックと本番ビルド
-- ローカルで予定の登録・編集・削除、帰宅連絡の保存
-- 未ログインのAPI拒否、別Originの書き込み拒否、不正なPush送信先の拒否
-- ブラウザーでの画面表示
-
-**iPhone実機でのWeb Push着信と、二台の端末間の通知テストは未実施です。**
-実際の利用開始前に、上記のテストを行ってください。
-
-## 主なファイル
-
-| ファイル | 内容 |
-| --- | --- |
-| `app/homeward.tsx` | 帰宅ボタン、チャット、カレンダー、通知登録の画面 |
-| `app/globals.css` | ブラック・シルバー・ゴールドのデザイン |
-| `app/api/family/route.ts` | 部屋、参加者、予定、チャット、帰宅連絡のAPI |
-| `app/api/push/route.ts` | 通知登録とテスト通知API |
-| `app/push.ts` | Web Pushの暗号化・送信処理 |
-| `app/api/photo/route.ts` | 写真アップロード・閲覧API |
-| `public/sw.js` | バックグラウンドの通知受信と通知タップの処理 |
-| `public/manifest.webmanifest` | ホーム画面追加用のWebアプリ設定 |
-| `db/schema.ts` | データベースの定義 |
-| `drizzle/` | DBマイグレーション |
-
-土台に含まれるライブラリー等のライセンスは、各パッケージと同梱のLICENSEファイルを確認してください。
+以前のテンプレートの未使用コンポーネント類は残しています。同梱LICENSE等と各依存パッケージのライセンスも確認してください。

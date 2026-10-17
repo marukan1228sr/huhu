@@ -1,2 +1,3 @@
 import Homeward from './homeward';
-export default function Page(){return <Homeward/>}
+import Login from './login';
+export default function Page(){return <Login><Homeward/></Login>}

@@ -1,10 +1,10 @@
 import {env} from 'cloudflare:workers';
-import {getChatGPTUser} from '../../chatgpt-auth';
+import {getFamilyUser} from '../../auth';
 import {notify} from '../../push';
 export const dynamic='force-dynamic';
 const reply=(x:unknown,status=200)=>Response.json(x,{status,headers:{'Cache-Control':'no-store'}});
 export async function GET(){
- const u=await getChatGPTUser();if(!u)return reply({error:'ログインが必要です'},401);
+ const u=await getFamilyUser();if(!u)return reply({error:'ログインが必要です'},401);
  const db=env.DB!;const m=await db.prepare('SELECT * FROM members WHERE id=?').bind(u.userId).first<any>();
  if(!m)return reply({user:u.userId,room:null});
  const room=await db.prepare('SELECT * FROM rooms WHERE id=?').bind(m.room).first();
@@ -13,7 +13,7 @@ export async function GET(){
  return reply({user:u.userId,room,people:people.results,entries:rows.results.map(e=>({...e,...JSON.parse(e.data)}))});
 }
 export async function POST(req:Request){
- const u=await getChatGPTUser();if(!u)return reply({error:'ログインが必要です'},401);
+ const u=await getFamilyUser();if(!u)return reply({error:'ログインが必要です'},401);
  if(req.headers.get('origin')!==new URL(req.url).origin)return reply({error:'アクセスできません'},403);
  const db=env.DB!;let b:any;try{b=await req.json()}catch{return reply({error:'入力を確認してください'},400)}
  const m=await db.prepare('SELECT * FROM members WHERE id=?').bind(u.userId).first<any>();
@@ -44,7 +44,7 @@ export async function POST(req:Request){
  let notification={registered:0,accepted:0,failed:0};
  if(kind==='return'||kind==='chat'){
   const others=await db.prepare('SELECT id FROM members WHERE room=? AND id<>?').bind(m.room,u.userId).all<any>();
-  notification=await notify(others.results.map(p=>p.id),{title:kind==='return'?`${m.name} · 今から帰るよ！`:`${m.name}からのメッセージ`,body:(text||(b.image?'📷 写真が届きました':'今から帰るよ！')).slice(0,300),url:kind==='chat'?'/?view=chat':'/',tag:kind==='return'?`return-${u.userId}`:crypto.randomUUID()});
+  notification=await notify(others.results.map(p=>p.id),{title:kind==='return'?`${m.name} · 今から帰るよ！`:`${m.name}からのメッセージ`,body:(text||(b.image?'📷 写真が届きました':'今から帰るよ！')).slice(0,300),url:kind==='chat'?'/?view=chat':'/',tag:kind==='return'?`return-${u.userId}`:crypto.randomUUID()},new URL(req.url).origin);
  }
  return reply({ok:true,notification});
 }

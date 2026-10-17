@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "huhu",
+  "main": "./build/worker.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "d1_databases": [
+    { "binding": "DB", "database_name": "huhu-family", "migrations_dir": "drizzle" }
+  ]
+}
+

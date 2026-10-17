@@ -1,0 +1,2 @@
+# Cloudflareに設定する初期設定キー。24文字以上。実際の値はGitHubに保存しないでください。
+SETUP_KEY=replace-with-your-own-long-random-initial-setup-key
