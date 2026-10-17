@@ -11,8 +11,16 @@
  input,textarea,.modal input,.modal textarea,.form-pair input,.return-note input{font-size:16px}
  .chat-input{gap:6px;padding:7px;margin:0 12px}.chat-input>input{font-size:16px;padding:5px 2px}
  .composer-focused .mobile-nav{display:none}
- .composer-focused .chat-panel{padding-bottom:82px}
- .composer-focused .chat-input{position:fixed;z-index:90;top:var(--visible-bottom,100dvh);left:0;right:0;transform:translateY(-100%);margin:0;border-radius:12px 12px 0 0;padding:9px 12px 10px;background:#17191c;box-shadow:0 -8px 24px #0006;border:1px solid #5c5038}
+ .composer-focused .chat-panel{position:fixed;z-index:80;top:calc(var(--visible-bottom,100dvh) - var(--visible-height,100dvh));left:0;right:0;width:100%;height:var(--visible-height,100dvh);min-height:0;padding:0;border:0;border-radius:0;box-shadow:0 0 0 100vmax #111213;background:#1a1b1d;overflow:hidden;display:flex;flex-direction:column}
+ .composer-focused .chat-panel .panel-heading{flex-shrink:0;padding:max(14px,env(safe-area-inset-top)) 18px 14px}
+ .composer-focused .chat-panel .panel-heading .eyebrow{margin-bottom:6px}
+ .composer-focused .chat-panel .panel-heading h2{margin-top:6px}
+ .composer-focused .chat-input{position:static;transform:none;flex-shrink:0;margin:0 10px max(10px,env(safe-area-inset-bottom));border-radius:8px;padding:7px;background:#111315;border:1px solid #5c5038;box-shadow:none}
+ .composer-focused .chat-footnote{display:none}
  .composer-focused .toast{bottom:auto;top:calc(var(--visible-bottom,100dvh) - 132px);z-index:110}
- .composer-focused .messages,.composer-focused .single .messages{min-height:100px;max-height:max(100px,calc(var(--visible-height,100dvh) - 180px))}
+ .composer-focused .messages,.composer-focused .single .messages{flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;padding:15px 18px}
+ .composer-focused .messages .chat-empty{min-height:0;padding:12px 0}
+ .composer-focused .finish-composing{display:flex}
 }
+
+.chat-heading-actions{display:flex;align-items:center;gap:14px}.finish-composing{display:none;align-items:center;gap:6px;min-height:44px;padding:8px 10px;font-size:13px;color:var(--gold);border:1px solid #5c5038;border-radius:7px;touch-action:manipulation}
